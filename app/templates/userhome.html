@@ -16,11 +16,9 @@
 		<th>Actions</th>
 	</tr>
 	
-	{% set count = 0%}
 	{% for task in tasks %}	
-	{% set count = count +1 %}
 	<tr> 
-		<td>{{count}}</td>
+		<td>{{loop.index}}</td>
 		<td>{{task.title}}</td>
 		<td>{{task.body}}</td>
 		<td>
