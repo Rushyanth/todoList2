@@ -2,3 +2,5 @@ import os
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dummy'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql://dummy:dummy@localhost/dummy'
+    SQLALCHEMY_TRACK_MODIFICATIONS = Dummy
