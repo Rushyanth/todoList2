@@ -38,8 +38,7 @@ class TaskList(db.Model):
 	def is_own_task(self, id):
 		if id == current_user.id :
 			return True
-		else:
-			return False
+		return False
 	 
 @login.user_loader
 def load_user(id):

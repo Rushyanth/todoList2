@@ -1,14 +1,13 @@
 from app import app, db
 from flask import render_template, flash, redirect, request, url_for, session, make_response
 from app.forms import RegisterForm, LoginForm, AddTaskForm
-from flask_login import current_user, login_user, login_required
+from flask_login import current_user, login_user, login_required, logout_user
 from app.models import Users, TaskList
 from datetime import datetime
 
 @app.route('/')
 @app.route('/home')
 def home():
-	user = {'username': 'rushi'}
 	return render_template('home.html')
 
 # RegisterForm
@@ -68,10 +67,11 @@ def login_post():
 		if user is None or not user.check_password(password):
 			flash("User doesnt exist or password is incorrect")
 			return redirect(url_for('login_get'))
-		else:
-			login_user(user)								# Authentication of User
-			session['user_id'] = user.id
-			return redirect('userhome')
+		
+		# Authentication of User
+		login_user(user)								
+		session['user_id'] = user.id
+		return redirect('userhome')
 		
 
 # User Home Page
@@ -81,25 +81,19 @@ def userhome():
 	# Get the tasks to homepage
 	# Retreive data
 	tasks = current_user.tasks.all()
-	print(tasks)
 	
 	if len(tasks) > 0 :
 		# return render_template('userhome.html', tasks = tasks)
 		response = make_response(render_template('userhome.html', tasks = tasks))
-		response.headers['Last-Modified'] = datetime.now()
-		response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
-		response.headers['Pragma'] = 'no-cache'
-		response.headers['Expires'] = '-1'
-		return response
+		
 	else:
 		response = make_response(render_template('userhome.html'))
-		response.headers['Last-Modified'] = datetime.now()
-		response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
-		response.headers['Pragma'] = 'no-cache'
-		response.headers['Expires'] = '-1'
-		return response
-	# Close cursor
-	cur.close()
+
+	response.headers['Last-Modified'] = datetime.now()
+	response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+	response.headers['Pragma'] = 'no-cache'
+	response.headers['Expires'] = '-1'
+	return response
 
 # Add Task
 @app.route('/addTask', methods = ['GET'])
@@ -113,7 +107,6 @@ def addTask_get():
 def addTask_post():
 	form = AddTaskForm(request.form)
 	if form.validate():
-		form = AddTaskForm(request.form)	
 		# Get Task Details
 		title = form.title.data
 		body = form.body.data
@@ -138,9 +131,9 @@ def editTask_get(id):
 	
 	if task is not None and task.is_own_task(task.user_id):
 		return render_template('editTask.html', task=task)
-	else :
-		flash("The task doesnot belong to you", "danger")
-		return redirect(url_for('userhome'))
+	
+	flash("The task doesnot belong to you", "danger")
+	return redirect(url_for('userhome'))
 
 @app.route('/editTask/<string:id>', methods = ['POST'])
 @login_required
@@ -194,7 +187,7 @@ def statusOfTask(status,id):
 @app.route('/logout')
 @login_required
 def logout():
-	session.clear();
+	logout_user()
 	flash("You are logged out")
 	return redirect(url_for('login_get'))
 
