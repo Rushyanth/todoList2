@@ -13,7 +13,8 @@
 		<th>Title</th>
 		<th>Description</th>
 		<th>Status</th>
-		<th>Actions</th>
+		<th colspan="2">&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Actions</th>
+
 	</tr>
 	
 	{% for task in tasks %}	
@@ -40,12 +41,14 @@
 			
 		</td>
 		<td>
-			<div style="display:inline-block">
 				<a href="/editTask/{{task.id}}" class="btn btn-success">Edit</a>
+			
+		</td>
+		<td>
 				<form action="/deleteTask/{{task.id}}" method="POST">
 					<input type="submit" name="delete" value="Delete" class="btn btn-danger">
 				</form>
-			</div>
+		
 			
 		</td>
 	</tr>

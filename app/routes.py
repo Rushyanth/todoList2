@@ -171,6 +171,10 @@ def editTask_post(id):
     if task is None or not task.is_own_task(task.user_id):
         return redirect(url_for('userhome'))
     # Get Task Details
+    if not request.form['title'] or not request.form['body']:
+        flash("Field can't be empty", "danger")
+        return redirect(url_for('userhome'))
+
     task.title = request.form['title']
     task.body = request.form['body']
     task.status = False
