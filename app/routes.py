@@ -1,6 +1,6 @@
 from app import app, db
 from flask import (
-    render_template, flash, redirect, request, url_for, session, make_response
+    render_template, flash, redirect, request, url_for, make_response
 )
 from app.forms import RegisterForm, LoginForm, AddTaskForm
 from flask_login import current_user, login_user, login_required, logout_user
@@ -11,6 +11,8 @@ from datetime import datetime
 @app.route('/')
 @app.route('/home')
 def home():
+    if current_user.is_authenticated:
+        return redirect(url_for('userhome'))
     return render_template('home.html')
 
 # RegisterForm
@@ -18,6 +20,8 @@ def home():
 
 @app.route('/register', methods=['GET'])
 def register_get():
+    if current_user.is_authenticated:
+        return redirect(url_for('userhome'))
     form = RegisterForm()
     return render_template('register.html', form=form)
 
@@ -40,7 +44,6 @@ def register_post():
             db.session.add(user)
             db.session.commit()
         except Exception:
-            print("in databaseerror exception block")
             flash("Could not register", "danger")
             return redirect(url_for('register_get'))
         else:
@@ -77,12 +80,11 @@ def login_post():
 
         # Check for username and password
         if user is None or not user.check_password(password):
-            flash("User doesnt exist or password is incorrect")
+            flash("User doesnt exist or password is incorrect", "danger")
             return redirect(url_for('login_get'))
 
         # Authentication of User
         login_user(user)
-        session['user_id'] = user.id
         return redirect('userhome')
 
 
@@ -153,12 +155,11 @@ def addTask_post():
 def editTask_get(id):
     # Get data
     task = TaskList.query.filter_by(id=id).first()
+    if task is None or not task.is_own_task(task.user_id):
+        flash("task doesn't belong to you", "danger")
+        return redirect(url_for('userhome'))
 
-    if task is not None and task.is_own_task(task.user_id):
-        return render_template('editTask.html', task=task)
-
-    flash("The task doesnot belong to you", "danger")
-    return redirect(url_for('userhome'))
+    return render_template('editTask.html', task=task)
 
 
 @app.route('/editTask/<string:id>', methods=['POST'])
@@ -167,9 +168,8 @@ def editTask_post(id):
     # Get data
     task = TaskList.query.filter_by(id=id).first()
 
-    if task is not None and task.is_own_task(task.user_id):
-        return render_template('editTask.html', task=task)
-
+    if task is None or not task.is_own_task(task.user_id):
+        return redirect(url_for('userhome'))
     # Get Task Details
     task.title = request.form['title']
     task.body = request.form['body']
@@ -192,8 +192,8 @@ def editTask_post(id):
 def deleteTask(id):
     try:
         task = TaskList.query.filter_by(id=id).first()
-        if task is not None and task.is_own_task(task.user_id):
-            return render_template('editTask.html', task=task)
+        if task is None or not task.is_own_task(task.user_id):
+            return redirect(url_for('userhome'))
         db.session.delete(task)
         db.session.commit()
     except Exception:
@@ -217,13 +217,13 @@ def statusOfTask(status, id):
 
     try:
         task = TaskList.query.filter_by(id=id).first()
-        if task is not None and task.is_own_task(task.user_id):
-            return render_template('editTask.html', task=task)
+        if task is None or not task.is_own_task(task.user_id):
+            return redirect(url_for('userhome'))
         task.status = status
         db.session.add(task)
         db.session.commit()
     except Exception:
-        flash("Status culdn't be changed", "danger")
+        flash("Status couldn't be changed", "danger")
         return redirect(url_for('userhome'))
     else:
         flash("Status changed succesfully ", "success")
@@ -236,5 +236,5 @@ def statusOfTask(status, id):
 @login_required
 def logout():
     logout_user()
-    flash("You are logged out")
+    flash("You are logged out", "success")
     return redirect(url_for('login_get'))
