@@ -6,9 +6,14 @@ from flask_login import LoginManager
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# Initialize DB
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+# Flask Login setup
 login = LoginManager(app)
 login.login_view = "login_get"
+
 
 from app import routes, models
