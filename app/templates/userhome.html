@@ -22,14 +22,31 @@
 		<td>{{task.title}}</td>
 		<td>{{task.body}}</td>
 		<td>
+			{% if task.status == False %}
+			{% set val = "Not Done"%}
+			{% else %}
+			{% set val = "Done" %}
+			{% endif %}
+
+			{%if val== "Not Done"%}
 			<form action="/statusOfTask/{{task.status}}/{{task.id}}" method="POST">
-				<input type="submit" name="status" value="{{task.status}}" class="btn btn-success">
+				<input type="submit" name="status" value="{{val}}" class="btn btn-warning">
 			</form>
+			{%else%}
+			<form action="/statusOfTask/{{task.status}}/{{task.id}}" method="POST">
+				<input type="submit" name="status" value="{{val}}" class="btn btn-success">
+			</form>
+			{% endif %}
+			
 		</td>
-		<td><a href="/editTask/{{task.id}}" class="btn btn-success">Edit</a>
-			<form action="/deleteTask/{{task.id}}" method="POST">
-				<input type="submit" name="delete" value="Delete" class="btn btn-danger">
-			</form>
+		<td>
+			<div style="display:inline-block">
+				<a href="/editTask/{{task.id}}" class="btn btn-success">Edit</a>
+				<form action="/deleteTask/{{task.id}}" method="POST">
+					<input type="submit" name="delete" value="Delete" class="btn btn-danger">
+				</form>
+			</div>
+			
 		</td>
 	</tr>
 	{% endfor %}
